@@ -6,6 +6,8 @@ use App\Entity\Ad;
 use Faker\Factory;
 use App\Entity\User;
 use App\Entity\Image;
+use App\Entity\Booking;
+use DateTimeImmutable;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -95,6 +97,31 @@ class AppFixtures extends Fixture
                     ->setCaption($faker->sentence())
                     ->setAd($ad);
                 $manager->persist($image);    
+            }
+
+            //gestion des réservations
+            for($b=1; $b<=rand(0,10); $b++)
+            {
+                $booking= new Booking();
+                $createAt = $faker->dateTimeBetween('-6 months',"-4months");
+                $createdAt = new DateTimeImmutable($createAt->format('Y-m-d'));
+                $startDate = $faker->dateTimeBetween('-3months');
+                $duration = rand(3,10);
+                //startDate est maintenant un objet de type DateTime
+                $endDate = (clone $startDate)->modify("+$duration days");
+                $amount = $ad->getPrice() * $duration;
+                $booker = $users[rand(0,count($users)-1)];
+                $comment = $faker->paragraph();
+
+                $booking->setBooker($booker)
+                        ->setAd($ad)
+                        ->setStartDate($startDate)
+                        ->setEndDate($endDate)
+                        ->setCreatedAt($createdAt)
+                        ->setAmount($amount)
+                        ->setComment($comment);
+
+                $manager->persist($booking);
             }
 
         }
